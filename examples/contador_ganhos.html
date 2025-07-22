@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Contador de Ganhos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 2em;
+    }
+    .value {
+      font-size: 2em;
+      margin: 0.5em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Contador de Ganhos</h1>
+  <div>Ganhos do dia: <span id="daily" class="value">R$ 0,00</span></div>
+  <div>Ganhos da semana: <span id="weekly" class="value">R$ 0,00</span></div>
+  <script>
+    const dailyPay = 1000;
+    const startHour = 6;
+    const endHour = 14;
+    const workDuration = endHour - startHour;
+
+    function formatCurrency(value) {
+      return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function calculateDailyEarnings(now) {
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, 0, 0);
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endHour, 0, 0);
+
+      if (now >= end) {
+        return dailyPay;
+      }
+      if (now <= start) {
+        return 0;
+      }
+      const progress = (now - start) / (end - start);
+      return Math.min(progress * dailyPay, dailyPay);
+    }
+
+    function calculateWeeklyEarnings(now, todayEarnings) {
+      let completedDays;
+      const day = now.getDay();
+      if (day === 0 || day === 6) {
+        completedDays = 5; // fim de semana: assume semana completa (seg-sex)
+      } else {
+        completedDays = day - 1; // segunda = 0 dias completos
+      }
+      let total = dailyPay * completedDays;
+      if (day >= 1 && day <= 5) {
+        total += todayEarnings;
+      }
+      return total;
+    }
+
+    function updateEarnings() {
+      const now = new Date();
+      const todayEarnings = calculateDailyEarnings(now);
+      const weeklyEarnings = calculateWeeklyEarnings(now, todayEarnings);
+
+      document.getElementById('daily').textContent = formatCurrency(todayEarnings);
+      document.getElementById('weekly').textContent = formatCurrency(weeklyEarnings);
+    }
+
+    updateEarnings();
+    setInterval(updateEarnings, 1000);
+  </script>
+</body>
+</html>
